@@ -124,27 +124,25 @@ a2enmod security2
 
 apachectl -M | grep security
 
-sudo cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
+sudo  sudo cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
 sudo nano /etc/modsecurity/modsecurity.conf
 
+          # Change the value of SecRuleEngine from DetectionOnly to On.
           SecRuleEngine on
 
 sudo systemctl restart apache2 
 
-sudo git clone https://github.com/coreruleset/coreruleset.git
-cd coreruleset/
-
-sudo mv crs-setup.conf.example /etc/modsecurity/crs-setup.conf
-
-sudo mv rules/ /etc/modsecurity/
+sudo mv /usr/share/modsecurity-crs /usr/share/modsecurity-crs.bk
+sudo git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git /usr/share/modsecurity-crs
+sudo cp /usr/share/modsecurity-crs/crs-setup.conf.example /usr/share/modsecurity-crs/crs-setup.conf
 
 sudo nano /etc/apache2/mods-enabled/security2.conf
 
         # Change all content to look like this
         <IfModule security2_module> 
                 SecDataDir /var/cache/modsecurity 
-                IncludeOptional /etc/modsecurity/*.conf
-                Include /etc/modsecurity/rules/*.conf
+                IncludeOptional /usr/share/modsecurity-crs/*.conf
+                IncludeOptional "/usr/share/modsecurity-crs/rules/*.conf
         </IfModule>
 
 sudo systemctl restart apache2 
