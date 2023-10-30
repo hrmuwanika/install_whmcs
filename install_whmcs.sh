@@ -119,32 +119,32 @@ dpkg --list | grep php
 ################ End of LAMP installation #################
 
 ###### Installation of mod security and configuration #################
-
 sudo apt install -y libapache2-mod-security2
 a2enmod security2
 
 apachectl -M | grep security
 
-sudo mv /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
+sudo cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
 sudo nano /etc/modsecurity/modsecurity.conf
 
-          # change detectiononly to on
           SecRuleEngine on
-          SecResponseBodyAccess Off
 
-sudo service apache2 restart
-sudo rm -rf /usr/share/modsecurity-crs
-sudo git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git /usr/share/modsecurity-crs
-cd /usr/share/modsecurity-crs 
-sudo mv crs-setup.conf.example crs-setup.conf
+sudo systemctl restart apache2 
+
+sudo git clone https://github.com/coreruleset/coreruleset.git
+cd coreruleset/
+
+sudo mv crs-setup.conf.example /etc/modsecurity/crs-setup.conf
+
+sudo mv rules/ /etc/modsecurity/
+
 sudo nano /etc/apache2/mods-enabled/security2.conf
 
         # Change all content to look like this
         <IfModule security2_module> 
                 SecDataDir /var/cache/modsecurity 
-                IncludeOptional /etc/modsecurity/*.conf 
-                IncludeOptional /usr/share/modsecurity-crs/*.conf 
-                IncludeOptional /usr/share/modsecurity-crs/rules/*.conf 
+                IncludeOptional /etc/modsecurity/*.conf
+                Include /etc/modsecurity/rules/*.conf
         </IfModule>
 
 sudo systemctl restart apache2 
@@ -153,7 +153,6 @@ sudo apache2ctl -t && sudo apache2ctl restart
 ###### End of mod security configuration #################
 
 ###### Installation of Ioncube loader ###################
-
 cd /usr/src
 sudo wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
 sudo tar xvfz ioncube_loaders_lin_x86-64.tar.gz
@@ -170,17 +169,16 @@ sudo systemctl restart apache2.service
 php -v
 
 #### Installation of WHMCS 8.8.0 ####
-
 cd /usr/src
-wget https://downloads.whmcs.com/whmcs_v880_full.zip
-unzip whmcs_v771_full.zip
+# Download the latest from https://downloads.whmcs.com/
+unzip whmcs_v880_full.zip
 
 cp -rf /usr/src/whmcs/* /var/www/html/
 cd /var/www/html/
 
 cp configuration.php.new configuration.php && chmod 777 configuration.php
 
-vim configuration.php
+nano configuration.php
 
          # add this line at bottom
          $customadminpath = '256admin';
@@ -200,10 +198,10 @@ cp config.php.new config.php
 
          $crons_dir = '/var/www/html/';
 
-vim /var/www/html/.htaccess 
+nano /var/www/html/.htaccess 
 chmod 777 /var/www/html/.htaccess
 
-https://billing.vps.rw/install/install.php
+# https://billing.example.com/install/install.php
 
 # Register whmcs
 WHMCS-66e4f7566d5841a6ce07
@@ -214,7 +212,7 @@ password: password
 cd /var/www/html/
 rm -rf install/
 
-chmod 444 /var/www/html/configuration.php
+chmod 400 /var/www/html/configuration.php
 
 # Rename admin folder for security purposes
 cd /var/www/html/
@@ -231,14 +229,14 @@ cp -rf DPO_WHMCS/modules/gateways/* /var/www/html/modules/gateways/
 
 # Downloadload Vultr module
 cd /usr/src
-git clone https://github.com/vultr/whmcs-vultr
+# buy the vultr whmcs module from https://www.modulesgarden.com/products/whmcs/vultr-vps  # 
 ls whmcs-vultr
 
 cp -rf /usr/src/whmcs-vultr/addons/* /var/www/html/modules/addons
 cp -rf /usr/src/whmcs-vultr/servers/* /var/www/html/modules/servers
 
 # Configure WHMCS
-# https://billing.vps.rw
+# https://billing.example.com
 
 # Renew certbot certificate
 crontab -e
