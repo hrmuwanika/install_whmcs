@@ -7,7 +7,7 @@
 ##  Mariadb server 10.8
 ##  PHP version 8.1
 ##  ionCube Loader 13.0.2
-##  WHMCS version 8.7.1 
+##  WHMCS version 8.8.0 
 ##  An active, funded Vultr Account
 ##  A valid Vultr API Key
 
