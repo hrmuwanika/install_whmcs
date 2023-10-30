@@ -5,8 +5,8 @@
 #### Pre-requisites ####
 ##  Apache version 2.4
 ##  Mariadb server 10.8
-##  PHP version 7.4
-##  ionCube Loader 10.3.4
+##  PHP version 8.1
+##  ionCube Loader 13.0.2
 ##  WHMCS version 8.7.1 
 ##  An active, funded Vultr Account
 ##  A valid Vultr API Key
@@ -105,13 +105,13 @@ FLUSH PRIVILEGES;
 EXIT;
 MYSQL_SCRIPT
 
-######## Installation of php 7.4 #################
+######## Installation of php 8.1 #################
 sudo apt install ca-certificates apt-transport-https software-properties-common -y
 sudo add-apt-repository ppa:ondrej/php  -y
 sudo apt update
 
-sudo apt install -y php7.4 php7.4-common php7.4-cli php7.4-bz2 php7.4-json php7.4-iconv php7.4-mysql php7.4-zip php7.4-gd php7.4-gmp php7.4-intl \
-php7.4-bcmath php7.4-mbstring php7.4-curl php7.4-xml php7.4-imap libapache2-mod-php7.4 php7.4-xmlrpc php7.4-soap php7.4-ldap php7.4-cgi php7.4-opcache php-pear 
+sudo apt install -y php8.1 php8.1-common php8.1-cli php8.1-bz2 php8.1-json php8.1-iconv php8.1-mysql php8.1-zip php8.1-gd php8.1-gmp php8.1-intl \
+php8.1-bcmath php8.1-mbstring php8.1-curl php8.1-xml php8.1-imap libapache2-mod-php8.1 php8.1-xmlrpc php8.1-soap php8.1-ldap php8.1-cgi php8.1-opcache php-pear 
 
 dpkg --list | grep php
 # php -version
@@ -155,16 +155,16 @@ sudo apache2ctl -t && sudo apache2ctl restart
 ###### Installation of Ioncube loader ###################
 
 cd /usr/src
-sudo wget http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz 
+sudo wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
 sudo tar xvfz ioncube_loaders_lin_x86-64.tar.gz
 ls ioncube/*
 
 # find extension directory
 php -i | grep extension_dir
 
-sudo cp ioncube/ioncube_loader_lin_7.4.so /usr/lib/php/20190902/
-echo "zend_extension=/usr/lib/php/20190902/ioncube_loader_lin_7.4.so"|sudo tee -a /etc/php/7.4/cli/php.ini
-echo "zend_extension=/usr/lib/php/20190902/ioncube_loader_lin_7.4.so"|sudo tee -a /etc/php/7.4/apache2/php.ini
+sudo cp ioncube/ioncube_loader_lin_8.1.so /usr/lib/php/20190902/
+echo "zend_extension=/usr/lib/php/20190902/ioncube_loader_lin_8.1.so"|sudo tee -a /etc/php/8.1/cli/php.ini
+echo "zend_extension=/usr/lib/php/20190902/ioncube_loader_lin_8.1.so"|sudo tee -a /etc/php/8.1/apache2/php.ini
 
 sudo systemctl restart apache2.service
 php -v
