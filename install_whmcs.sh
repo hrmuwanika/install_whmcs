@@ -1,18 +1,17 @@
 #!/bin/sh
 
-#### Installation of WHMCS 7.7.1 on Debian Buster 64 bit #####
+#### Installation of WHMCS 8.7.1 on Ubuntu 20.04 64 bit #####
 
 #### Pre-requisites ####
 ##  Apache version 2.4
-##  MySQL version 8
-##  PHP version 7.3
+##  Mariadb server 10.8
+##  PHP version 7.4
 ##  ionCube Loader 10.3.4
-##  WHMCS version 7.7.1 
+##  WHMCS version 8.7.1 
 ##  An active, funded Vultr Account
 ##  A valid Vultr API Key
 
 #### Perform full system Update ####
-
 sudo apt update -y && sudo apt upgrade -y
 
 # Set Kigali Timezone
@@ -83,40 +82,39 @@ apache2ctl configtest
 rm /var/www/html/index.html
 
 ###### Install letsencrypt ssl certificate #########
-sudo apt-get install certbot python-certbot-apache
+sudo apt -y install certbot python-certbot-apache
 sudo certbot --apache
 
-##### Installation of MySQL v8 in debian buster #######
+##### Installation of Mariadb in ubuntu 20.04 #######
 cd /usr/src
-wget http://repo.mysql.com/mysql-apt-config_0.8.15-1_all.deb
-dpkg -i mysql-apt-config_0.8.15-1_all.deb
+sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
+sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] https://mariadb.mirror.liquidtelecom.com/repo/10.8/ubuntu focal main'
+sudo apt update
 
-sudo apt update && apt install -y mysql-server mysql-client
-sudo systemctl enable mysql.service && systemctl start mysql.service
+sudo apt apt -y install mariadb-server mariadb-client
+sudo systemctl restart mariadb.service
+sudo systemctl enable mariadb.service 
 
 # Securing MySQL
 # mysql_secure_installation
 
-sudo systemctl restart mysql.service
-
-sudo mysql -u root -p 
-
-CREATE DATABASE bluwhmcsdb;
-CREATE USER 'bluadmin'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
-GRANT ALL PRIVILEGES ON bluwhmcsdb.* TO'bluadmin'@'localhost';
+sudo mysql -u root -p << MYSQL_SCRIPT
+CREATE DATABASE whmcs;
+GRANT ALL ON whmcs.* TO whmcs@localhost IDENTIFIED BY "StrongDBPassw0rd";
 FLUSH PRIVILEGES;
 EXIT;
+MYSQL_SCRIPT
 
 ######## Installation of php 7.4 #################
 sudo apt install ca-certificates apt-transport-https software-properties-common -y
 sudo add-apt-repository ppa:ondrej/php  -y
 sudo apt update
 
-sudo apt install -y php7.4 php7.4-common php7.4-cli php7.4-json php7.4-iconv php7.4-mysql php7.4-zip php7.4-gd php7.4-gmp php7.4-intl \
-php7.4-bcmath php7.4-mbstring php7.4-curl php7.4-xml php7.4-imap libapache2-mod-php7.4 php7.4-xmlrpc php7.4-soap php-pear 
+sudo apt install -y php7.4 php7.4-common php7.4-cli php7.4-bz2 php7.4-json php7.4-iconv php7.4-mysql php7.4-zip php7.4-gd php7.4-gmp php7.4-intl \
+php7.4-bcmath php7.4-mbstring php7.4-curl php7.4-xml php7.4-imap libapache2-mod-php7.4 php7.4-xmlrpc php7.4-soap php7.4-ldap php7.4-cgi php7.4-opcache php-pear 
 
 dpkg --list | grep php
-php -v
+# php -version
 
 ################ End of LAMP installation #################
 
@@ -128,7 +126,7 @@ a2enmod security2
 apachectl -M | grep security
 
 sudo mv /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
-sudo vim /etc/modsecurity/modsecurity.conf
+sudo nano /etc/modsecurity/modsecurity.conf
 
           # change detectiononly to on
           SecRuleEngine on
@@ -139,7 +137,7 @@ sudo rm -rf /usr/share/modsecurity-crs
 sudo git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git /usr/share/modsecurity-crs
 cd /usr/share/modsecurity-crs 
 sudo mv crs-setup.conf.example crs-setup.conf
-sudo vim /etc/apache2/mods-enabled/security2.conf
+sudo nano /etc/apache2/mods-enabled/security2.conf
 
         # Change all content to look like this
         <IfModule security2_module> 
@@ -164,21 +162,9 @@ ls ioncube/*
 # find extension directory
 php -i | grep extension_dir
 
-sudo cp ioncube/ioncube_loader_lin_7.3.so /usr/lib/php/20180731/
-
-sudo vim /etc/php/7.3/cli/php.ini
-       
-      zend_extension = "/usr/lib/php/20180731/ioncube_loader_lin_7.3.so"     
-
-sudo vim /etc/php/7.3/apache2/php.ini
-
-      zend_extension = "/usr/lib/php/20180731/ioncube_loader_lin_7.3.so"
-      date.timezone = "Africa/Nairobi"
-      allow_url_fopen = on
-
-sudo vim /etc/php/7.3/apache2/conf.d/00-ioncube.ini
-
-      zend_extension = "/usr/lib/php/20180731/ioncube_loader_lin_7.3.so" 
+sudo cp ioncube/ioncube_loader_lin_7.4.so /usr/lib/php/20190902/
+echo "zend_extension=/usr/lib/php/20190902/ioncube_loader_lin_7.4.so"|sudo tee -a /etc/php/7.4/cli/php.ini
+echo "zend_extension=/usr/lib/php/20190902/ioncube_loader_lin_7.4.so"|sudo tee -a /etc/php/7.4/apache2/php.ini
 
 sudo systemctl restart apache2.service
 php -v
