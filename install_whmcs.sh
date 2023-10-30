@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#### Installation of WHMCS 8.7.1 on Ubuntu 20.04 64 bit #####
+#### Installation of WHMCS 8.8.0 on Ubuntu 20.04 64 bit #####
 
 #### Pre-requisites ####
 ##  Apache version 2.4
@@ -13,15 +13,10 @@
 
 #### Perform full system Update ####
 sudo apt update -y && sudo apt upgrade -y
-
-# Set Kigali Timezone
-timedatectl set-timezone Africa/Kigali
-timedatectl
-
-sudo apt install -y gnupg
+sudo apt install ca-certificates apt-transport-https software-properties-common -y
 
 #### Installation of other packages ####
-sudo apt install -y wget git unzip iptables-dev iptables-persistent 
+sudo apt install -y wget git unzip gnupg iptables-dev iptables-persistent 
 
 cd /usr/src
 sudo cat <<EOF > firewall.sh
@@ -41,14 +36,20 @@ iptables-save > /etc/iptables/rules.v4
 sudo chmod 755 firewall.sh
 sudo ./firewall.sh
 
-iptables -L
+# Set Kigali Timezone
+timedatectl set-timezone Africa/Kigali
+timedatectl
+
+################ Start of LAMP installation #################
 
 #### Installation of apache 2.4 ####
 sudo apt install -y apache2
-sudo systemctl enable apache2 && sudo systemctl restart apache2
+sudo systemctl enable apache2 
+sudo systemctl restart apache2
 
 # Enabling mod_rewrite
 sudo a2enmod rewrite
+sudo a2enmod php*
 sudo systemctl restart apache2 
 
 cd /etc/apache2/sites-available
@@ -58,7 +59,7 @@ sudo nano billing.conf
 
     <VirtualHost *:80>
     . . .
-    ServerName billing.vps.rw
+    ServerName billing.example.com
     DocumentRoot /var/www/html
     . . .
    </VirtualHost>
@@ -106,7 +107,6 @@ EXIT;
 MYSQL_SCRIPT
 
 ######## Installation of php 8.1 #################
-sudo apt install ca-certificates apt-transport-https software-properties-common -y
 sudo add-apt-repository ppa:ondrej/php  -y
 sudo apt update
 
@@ -169,10 +169,10 @@ echo "zend_extension=/usr/lib/php/20190902/ioncube_loader_lin_8.1.so"|sudo tee -
 sudo systemctl restart apache2.service
 php -v
 
-#### Installation of WHMCS 7.7.1 ####
+#### Installation of WHMCS 8.8.0 ####
 
 cd /usr/src
-wget https://my.westnic.net/whmcs/whmcs_v771_full.zip
+wget https://downloads.whmcs.com/whmcs_v880_full.zip
 unzip whmcs_v771_full.zip
 
 cp -rf /usr/src/whmcs/* /var/www/html/
